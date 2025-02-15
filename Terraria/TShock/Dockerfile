@@ -20,7 +20,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Handle volumes, and ports.
-VOLUME ["/data]
+VOLUME ["/tshock", "/worlds", "/plugins"]
 EXPOSE 7777
 
 # Container entry script

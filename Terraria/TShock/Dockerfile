@@ -5,7 +5,9 @@ FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:6.0 AS builder
 WORKDIR /data
 
 # Copy the project files
-COPY ./TShock-5.2.2/* . 
+COPY ./TShock-5.2.2.zip .
+RUN unzip TShock-5.2.2.zip
+RUN rm TShock-5.2.2.zip
 
 # Build the application
 RUN dotnet build -v m

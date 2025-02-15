@@ -1,0 +1,21 @@
+# Build command: git clone ... && cd ... && docker build -t minecraft-prominence2 .
+# Start; docker-compose up -d
+# Stop; docker-compose down
+# Attach to console: docker attach minecraft
+services:
+    minecraft-prominence2:
+        image: minecraft-prominence2:latest
+        container_name: minecraft-prominence2
+        restart: unless-stopped
+        ports:
+            - "0.0.0.0:25565:25565/tcp"
+        environment:
+           - "TZ=America/New_York"
+           - "UID=1000"
+           - "GID=1000"
+           - "MIN_RAM=1024M"
+           - "MAX_RAM=5120M"
+        volumes:
+            - ./data:/server
+        stdin_open: true
+        tty: true

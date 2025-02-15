@@ -1,10 +1,6 @@
 #!/bin/bash
 
-set -e  # Exit on error
-
-# Default memory settings (can be overridden by environment variables)
-MIN_RAM="${MIN_RAM:-1024M}"
-MAX_RAM="${MAX_RAM:-4096M}"
+#set -e  # Exit on error
 
 # Function to handle the stop signal
 stop_server() {
@@ -18,19 +14,6 @@ stop_server() {
 
 # Trap SIGTERM and SIGINT (Ctrl+C) to call stop_server()
 trap stop_server SIGTERM SIGINT
-
-echo "Checking if server files exist..."
-
-# Download SkyFactory4 if not present
-if [ ! -d /server/TShockLauncher ]; then
-    echo "Downloading TShock server..."
-
-    curl -O https://raw.githubusercontent.com/CameronS2005/docker-game-servers/main/Terraria/TShock/TShock-5.2.2.zip
-    unzip /server/TShock-5.2.2.zip -d /server
-    rm /server/TShock-5.2.2.zip
-
-    echo "TShock server files downloaded."
-fi
 
 echo "Starting TShock Terraria Server!!!"
 ./TShock.Server \

@@ -1,31 +1,27 @@
-# Use an official OpenJDK image as the base image
-FROM openjdk:8-jdk-slim
+### Base image 
+FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/dotnet/sdk:6.0 AS builder
 
-# Set the working directory inside the container
-WORKDIR /server
+# Build and package release based on target architecture
+RUN dotnet build -v m
+WORKDIR /data
 
-# Install necessary dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    git \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
+# Make TARGETPLATFORM available to the container.
+ARG TARGETPLATFORM
 
-# Create the minecraft user with UID 1000 and GID 1000
-RUN groupadd -g 1000 minecraft && useradd -r -u 1000 -g minecraft -m minecraft
+RUN dotnet publish -o output/ -r linux-x64 -v m -f net6.0 -c Release -p:PublishSingleFile=true --self-contained false
 
-# Set the ownership of the /server directory to the minecraft user
-RUN chown -R minecraft:minecraft /server
+# Runtime image
+FROM --platform=${TARGETPLATFORM} mcr.microsoft.com/dotnet/runtime:6.0 AS runner
+WORKDIR /data
+COPY --from=builder ./
 
 # Copy the entrypoint script into the container
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Expose the necessary ports
-EXPOSE 25565/tcp
+# Handle volumes, and ports.
+VOLUME ["/tshock", "/worlds", "/plugins"]
+EXPOSE 7777
 
-# Switch to the minecraft user
-USER minecraft
-
-# Use the entrypoint script
+# Container entry script
 ENTRYPOINT ["/entrypoint.sh"]

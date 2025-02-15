@@ -8,7 +8,7 @@ MAX_RAM="${MAX_RAM:-4096M}"
 
 # Function to handle the stop signal
 stop_server() {
-    echo "Stopping Terraria server gracefully..."
+    echo "Stopping Minecraft server gracefully..."
 
     # Send the "save-all" command to save the world and then "stop" to shut it down
     echo "save-all" | nc -U /server/serverconsole.sock
@@ -22,20 +22,31 @@ trap stop_server SIGTERM SIGINT
 echo "Checking if server files exist..."
 
 # Download SkyFactory4 if not present
-if [ ! -d /server/TShockLauncher ]; then
-    echo "Downloading TShock server..."
-
-    curl -O https://raw.githubusercontent.com/CameronS2005/docker-game-servers/main/Terraria/TShock/TShock-5.2.2.zip
-    unzip /server/TShock-5.2.2.zip -d /server
-    rm /server/TShock-5.2.2.zip
-
-    echo "TShock server files downloaded."
+if [ ! -f /server/settings.sh ]; then
+    echo "Downloading SkyFactory4 server..."
+    curl -L -o /server/sf4.zip https://mediafilez.forgecdn.net/files/3565/687/SkyFactory-4_Server_4_2_4.zip
+    unzip /server/sf4.zip -d /server
+    rm /server/sf4.zip
+    echo "SkyFactory4 server files downloaded."
 fi
 
-echo "Starting TShock Terraria Server!!!"
-./TShock.Server \
-  "-configpath /data" \
-  "-logpath /data/logs" \
-  "-crashdir /data/crashes" \
-  "-worldselectpath /worlds" \
-  "-additionalplugins /plugins"
+# Accept EULA automatically if not already accepted
+if [ ! -f /server/eula.txt ]; then
+    touch /server/eula.txt
+    echo "eula=true" > /server/eula.txt
+    echo "EULA accepted."
+fi
+
+# Install the server if not already installed
+if [ ! -f /server/.installed ]; then
+    echo "Installing SkyFactory4 Server!"
+    java -jar /server/forge-1.12.2-14.23.5.2860-installer.jar --installServer
+    touch /server/.installed
+    echo "Installation complete."
+    rm /server/forge-1.12.2-14.23.5.2860-installer.jar
+    echo "Installer removed."
+fi
+
+# Start the server in the foreground with dynamically set memory
+echo "Starting SkyFactory4 Server with $MIN_RAM min and $MAX_RAM max memory..."
+exec java -server -Xms"$MIN_RAM" -Xmx"$MAX_RAM" -XX:+UseG1GC -Dsun.rmi.dgc.server.gcInterval=2147483646 -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M -Dfml.readTimeout=180 -jar /server/forge-1.12.2-14.23.5.2860.jar nogui

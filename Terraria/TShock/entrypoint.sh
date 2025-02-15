@@ -24,8 +24,18 @@ echo "Checking if server files exist..."
 # Download SkyFactory4 if not present
 if [ ! -d /server/TShockLauncher ]; then
     echo "Downloading TShock server..."
-    curl -L -o /server/sf4.zip https://mediafilez.forgecdn.net/files/3565/687/SkyFactory-4_Server_4_2_4.zip
-    unzip /server/sf4.zip -d /server
-    rm /server/sf4.zip
-    echo "SkyFactory4 server files downloaded."
+
+    curl -O https://raw.githubusercontent.com/CameronS2005/docker-game-servers/main/Terraria/TShock/TShock-5.2.2.zip
+    unzip /server/TShock-5.2.2.zip -d /server
+    rm /server/TShock-5.2.2.zip
+
+    echo "TShock server files downloaded."
 fi
+
+echo "Starting TShock Terraria Server!!!"
+./TShock.Server \
+  "-configpath /data" \
+  "-logpath /data/logs" \
+  "-crashdir /data/crashes" \
+  "-worldselectpath /worlds" \
+  "-additionalplugins /plugins"

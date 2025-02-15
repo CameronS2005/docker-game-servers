@@ -1,0 +1,22 @@
+# Build command: git clone ... && cd ... && docker build -t minecraft-geyser .
+# Start; docker-compose up -d
+# Stop; docker-compose down
+# Attach to console: docker attach minecraft
+services:
+    minecraft-geyser:
+        image: minecraft-geyser:latest
+        container_name: minecraft-geyser
+        restart: unless-stopped
+        ports:
+            - "25565:25565/tcp"
+            - "19132:19132/udp"
+        environment:
+           - "TZ=America/New_York"
+           - "UID=1000"
+           - "GID=1000"
+           - "MIN_RAM=1024M"
+           - "MAX_RAM=4096M"
+        volumes:
+            - ./data:/server
+        stdin_open: true
+        tty: true
